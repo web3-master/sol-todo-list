@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::state::TodoList;
+use crate::states::todo_list::TodoList;
 
 pub fn create_list(ctx: Context<CreateList>, name: String, capacity: u16, account_bump: u8) -> Result<()> {
     let list = &mut ctx.accounts.list;
@@ -30,7 +30,7 @@ pub struct CreateList<'info> {
     pub system_program: Program<'info, System>,
 }
 
-fn name_seed(name: &str) -> &[u8] {
+pub fn name_seed(name: &str) -> &[u8] {
     let b = name.as_bytes();
     if b.len() > 32 {
         return &b[0..32];

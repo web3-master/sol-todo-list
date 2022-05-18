@@ -25,6 +25,7 @@ pub fn cancel(ctx: Context<Cancel>, _list_name: String) -> Result<()> {
     **item.to_account_info().lamports.borrow_mut() = 0;
     **ctx.accounts.item_creator.lamports.borrow_mut() += bounty;
 
+    // Remove canceled item from list.
     list.lines.retain(|key| key != item_key);
 
     Ok(())

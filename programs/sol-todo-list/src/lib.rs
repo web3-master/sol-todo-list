@@ -6,6 +6,7 @@ use anchor_lang::prelude::*;
 use instructions::create_list::*;
 use instructions::add::*;
 use instructions::cancel::*;
+use instructions::finish::*;
 
 declare_id!("5V9m3pCcyrWWVsQftZdWEP4GQVLfivAioqawUqjpJzDF");
 
@@ -23,5 +24,9 @@ pub mod sol_todo_list {
 
     pub fn cancel(ctx: Context<Cancel>, list_name: String) -> Result<()> {
         instructions::cancel::cancel(ctx, list_name)
+    }
+
+    pub fn finish(ctx: Context<Finish>, list_name: String) -> Result<()> {
+        instructions::finish::finish(ctx, list_name)
     }
 }

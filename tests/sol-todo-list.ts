@@ -129,6 +129,27 @@ async function cancelItem(list, item, itemCreator, user) {
   };
 }
 
+async function finishItem(list, item, itemCreator, user) {
+  let program = await programForUser(user);
+  await program.methods
+    .finish(list.data.name)
+    .accounts({
+      list: list.publicKey,
+      listOwner: list.data.listOwner,
+      item: item.publicKey,
+      itemCreator: itemCreator.key.publicKey,
+      user: user.key.publicKey,
+    })
+    .rpc();
+
+  let listData = await program.account.todoList.fetch(list.publicKey);
+
+  return {
+    publicKey: list.publicKey,
+    data: listData,
+  };
+}
+
 describe("create list", () => {
   it("create a list", async () => {
     const owner = await createUser();
@@ -277,5 +298,47 @@ describe("cancel item", () => {
     );
 
     expectBalance(adderBalanceAfterCancel, adderStartingBalance);
+  });
+});
+
+describe("finish item", () => {
+  it("add an item and finish it", async () => {
+    const bounty = 5 * LAMPORTS_PER_SOL;
+    let [owner, adder] = await createUsers(2);
+
+    let list = await createList(owner, "A list", 2);
+
+    const ownerInitialBalance = await getAccountBalance(owner.key.publicKey);
+
+    let addedResult = await addItem(list, adder, "Item1", bounty);
+
+    const addedItemAccountBalance = await getAccountBalance(
+      addedResult.item.publicKey
+    );
+
+    expect(addedItemAccountBalance).equals(bounty);
+
+    let listAfterListOwnerFinished = await finishItem(
+      list,
+      addedResult.item,
+      adder,
+      owner
+    );
+    expect(listAfterListOwnerFinished.data.lines).eql([
+      addedResult.item.publicKey,
+    ]);
+
+    let listAfterItemCreatorFinished = await finishItem(
+      list,
+      addedResult.item,
+      adder,
+      adder
+    );
+    expect(listAfterItemCreatorFinished.data.lines).eql([]);
+
+    const ownerBalanceAfterFinished = await getAccountBalance(
+      owner.key.publicKey
+    );
+    expectBalance(ownerBalanceAfterFinished, ownerInitialBalance + bounty);
   });
 });

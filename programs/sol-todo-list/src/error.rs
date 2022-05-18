@@ -18,5 +18,11 @@ pub enum TodoListError {
     ItemNotFound,
     
     #[msg("Item creator is not correct")]
-    WrongItemCreator
+    WrongItemCreator,
+
+    #[msg("Item already finished")]
+    ItemAlreadyFinished,
+
+    #[msg("Only list owner or item creator can finish item")]
+    WrongFinishPermission,
 }

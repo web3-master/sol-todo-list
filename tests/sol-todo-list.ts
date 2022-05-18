@@ -14,6 +14,10 @@ async function getAccountBalance(pubKey) {
   return account?.lamports ?? 0;
 }
 
+async function expectBalance(actual, expected, slack = 20000) {
+  expect(actual).within(expected - slack, expected + slack);
+}
+
 async function programForUser(user) {
   return new anchor.Program(
     mainProgram.idl,
@@ -100,7 +104,6 @@ async function addItem(list, user, name, bounty) {
     item: {
       publicKey: itemAccount.publicKey,
       data: itemData,
-      itemAccount: itemAccount,
     },
   };
 }
@@ -116,7 +119,6 @@ async function cancelItem(list, item, itemCreator, user) {
       itemCreator: itemCreator.key.publicKey,
       user: user.key.publicKey,
     })
-    .signers([item.itemAccount])
     .rpc();
 
   let listData = await program.account.todoList.fetch(list.publicKey);
@@ -254,7 +256,6 @@ describe("cancel item", () => {
     const list = await createList(owner, "list");
 
     const adderStartingBalance = await getAccountBalance(adder.key.publicKey);
-    console.log("adderStartingBalance", adderStartingBalance);
 
     const result = await addItem(
       list,
@@ -264,7 +265,6 @@ describe("cancel item", () => {
     );
 
     const adderBalanceAfterAdd = await getAccountBalance(adder.key.publicKey);
-    console.log("adderBalanceAfterAdd", adderBalanceAfterAdd);
 
     expect(result.list.data.lines).eql([result.item.publicKey]);
 
@@ -275,8 +275,7 @@ describe("cancel item", () => {
     const adderBalanceAfterCancel = await getAccountBalance(
       adder.key.publicKey
     );
-    console.log("adderBalanceAfterCancel", adderBalanceAfterCancel);
 
-    expect(adderBalanceAfterCancel).equals(adderStartingBalance);
+    expectBalance(adderBalanceAfterCancel, adderStartingBalance);
   });
 });

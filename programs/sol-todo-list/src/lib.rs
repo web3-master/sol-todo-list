@@ -5,6 +5,7 @@ mod error;
 use anchor_lang::prelude::*;
 use instructions::create_list::*;
 use instructions::add::*;
+use instructions::cancel::*;
 
 declare_id!("5V9m3pCcyrWWVsQftZdWEP4GQVLfivAioqawUqjpJzDF");
 
@@ -18,5 +19,9 @@ pub mod sol_todo_list {
 
     pub fn add(ctx: Context<Add>, list_name: String, item_name: String, bounty: u64) -> Result<()> {
         instructions::add::add(ctx, list_name, item_name, bounty)
+    }
+
+    pub fn cancel(ctx: Context<Cancel>, list_name: String) -> Result<()> {
+        instructions::cancel::cancel(ctx, list_name)
     }
 }
